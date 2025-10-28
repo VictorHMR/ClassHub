@@ -1,0 +1,56 @@
+## Ignore pastas de build
+bin/
+obj/
+out/
+
+## Ignore pastas do Visual Studio
+.vs/
+.vscode/
+
+## Arquivos de usuário
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Arquivos temporários
+*.tmp
+*.temp
+*.log
+*.cache
+
+## Pacotes NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Build do NuGet
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Diretório App_Data (SQLite)
+App_Data/*.db  # comente se quiser versionar o banco
+
+## Ignore publish outputs
+*.Publish.xml
+*.deploy.cmd
+*.deploy-readme.txt
+*.dll
+*.pdb
+*.exe
+*.cache
+
+## Outros arquivos do Visual Studio
+TestResults/
+_ReSharper*/
+*.DotSettings.user
+*.resharper
+*.userprefs
+
+## Rider IDE
+.idea/
+*.sln.iml
+
+## Blazor / Web
+wwwroot/**/*.map
