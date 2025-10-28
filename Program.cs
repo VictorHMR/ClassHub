@@ -1,19 +1,41 @@
+using ClassHub.ClassHubContext;
 using ClassHub.Components;
-using ClassHubContext.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Reflection;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 
-var path = Path.Combine(AppContext.BaseDirectory, "App_Data", "classhub.db");
+var path = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "ClassHub.db");
+
 builder.Services.AddDbContext<ClassHubDbContext>(options =>
     options.UseSqlite($"Data Source={path}"));
 
+builder.Services.AddBackendServices();
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key)
+        };
+    });
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

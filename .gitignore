@@ -54,3 +54,5 @@ _ReSharper*/
 
 ## Blazor / Web
 wwwroot/**/*.map
+App_Data/ClassHub.db
+appsettings.Development.json

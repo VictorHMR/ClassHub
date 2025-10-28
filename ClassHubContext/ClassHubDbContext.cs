@@ -1,12 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ClassHub.ClassHubContext.Models;
+using Microsoft.EntityFrameworkCore;
 
-namespace ClassHubContext.Data
+namespace ClassHub.ClassHubContext
 {
     public class ClassHubDbContext : DbContext
     {
         public ClassHubDbContext(DbContextOptions<ClassHubDbContext> options)
             : base(options) { }
 
+        public DbSet<User> Users => Set<User>();
 
     }
 }
