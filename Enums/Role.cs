@@ -1,6 +1,6 @@
 ﻿namespace ClassHub.Enums
 {
-    public enum Role
+    public enum TipoUsuario
     {
         Admin,
         Professor,

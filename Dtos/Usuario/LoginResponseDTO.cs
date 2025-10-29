@@ -1,6 +1,6 @@
 ﻿using ClassHub.Enums;
 
-namespace ClassHub.Dtos.Users
+namespace ClassHub.Dtos.Usuario
 {
     public class LoginResponseDTO
     {
@@ -8,6 +8,6 @@ namespace ClassHub.Dtos.Users
         public string Nome { get; set; }
         public string Email { get; set; }
         public string CPF { get; set; }
-        public Role Role { get; set; }
+        public TipoUsuario TipoUsuario { get; set; }
     }
 }

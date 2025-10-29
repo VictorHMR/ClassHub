@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ClassHub.ClassHubContext.Models
 {
-    public class User
+    public class Usuario
     {
         [Key]
         public int Id { get; set; }
@@ -18,6 +18,6 @@ namespace ClassHub.ClassHubContext.Models
         [Required]
         public string Senha { get; set; }
         [Required]
-        public Role Role { get; set; }
+        public TipoUsuario TipoUsuario { get; set; }
     }
 }

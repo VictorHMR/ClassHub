@@ -1,5 +1,5 @@
 ﻿using ClassHub.ClassHubContext.Services;
-using ClassHub.Dtos.Users;
+using ClassHub.Dtos.Usuario;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,12 +8,12 @@ namespace ClassHub.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
-    public class UserController : ControllerBase
+    public class UsuarioController : ControllerBase
     {
-        private readonly UserService _userService;
-        public UserController(UserService userService)
+        private readonly UsuarioService _usuarioService;
+        public UsuarioController(UsuarioService usuarioService)
         {
-            _userService = userService;
+            _usuarioService = usuarioService;
         }
         /// <summary>
         /// Fornece um token de autenticação baseado no email e senha fornecidos.
@@ -23,30 +23,30 @@ namespace ClassHub.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO login)
         {
-            var user = await _userService.ObterUserAsync(login);
-            if (user == null) return Unauthorized("Login ou senha inválidos");
+            var usuario = await _usuarioService.ObterUsuarioAsync(login);
+            if (usuario == null) return Unauthorized("Login ou senha inválidos");
 
             return Ok(new LoginResponseDTO
             {
-                Token = _userService.GerarToken(user),
-                Nome = user.Nome,
-                CPF = user.CPF,
-                Email = user.Email,
-                Role = user.Role
+                Token = _usuarioService.GerarToken(usuario),
+                Nome = usuario.Nome,
+                CPF = usuario.CPF,
+                Email = usuario.Email,
+                TipoUsuario = usuario.TipoUsuario
             });
         }
 
         /// <summary>
         /// Cria um usuário a partir de informações recebidas, apenas admins podem criar
         /// </summary>
-        /// <param name="newUser">Informações do usuário a ser criado</param>
-        #if !DEBUG
+        /// <param name="novoUsuario">Informações do usuário a ser criado</param>
+#if !DEBUG
         [Authorize(Roles = "Admin")]
-        #endif
+#endif
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] CreateUserRequestDTO newUser)
+        public async Task<IActionResult> Create([FromBody] CriarUsuarioRequestDTO novoUsuario)
         {
-            var user = await _userService.CriarUserAsync(newUser);
+            var usuario = await _usuarioService.CriarUsuarioAsync(novoUsuario);
             return Ok();
         }
 

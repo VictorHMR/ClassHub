@@ -1,5 +1,5 @@
 ﻿using ClassHub.ClassHubContext.Models;
-using ClassHub.Dtos.Users;
+using ClassHub.Dtos.Usuario;
 using ClassHub.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,44 +11,44 @@ using System.Text;
 
 namespace ClassHub.ClassHubContext.Services
 {
-    public class UserService
+    public class UsuarioService
     {
         private readonly ClassHubDbContext _db;
-        private readonly PasswordHasher<User> _hasher;
+        private readonly PasswordHasher<Usuario> _hasher;
         private readonly IConfiguration _configuration;
 
 
-        public UserService(ClassHubDbContext db, IConfiguration configuration)
+        public UsuarioService(ClassHubDbContext db, IConfiguration configuration)
         {
             _db = db;
-            _hasher = new PasswordHasher<User>();
+            _hasher = new PasswordHasher<Usuario>();
             _configuration = configuration;
 
 
         }
 
-        public async Task<User> CriarUserAsync(CreateUserRequestDTO newUser)
+        public async Task<Usuario> CriarUsuarioAsync(CriarUsuarioRequestDTO novoUsuario)
         {
-            var usuario = new User
+            var usuario = new Usuario
             {
-                Nome = newUser.Nome,
-                Email = newUser.Email,
-                CPF = newUser.CPF,
-                Role = newUser.Role
+                Nome = novoUsuario.Nome,
+                Email = novoUsuario.Email,
+                CPF = novoUsuario.CPF,
+                TipoUsuario = novoUsuario.TipoUsuario
             };
 
-            usuario.Senha = _hasher.HashPassword(usuario, newUser.Senha);
-            usuario.RA = $"{DateTime.Now.Year}{usuario.Id:D3}";
-            _db.Users.Add(usuario);
+            usuario.Senha = _hasher.HashPassword(usuario, novoUsuario.Senha);
+            usuario.RA = usuario.TipoUsuario != TipoUsuario.Aluno ? usuario.Email : $"{DateTime.Now.Year}{usuario.Id:D3}";
+            _db.Usuarios.Add(usuario);
 
             await _db.SaveChangesAsync();
 
             return usuario;
         }
 
-        public async Task<User?> ObterUserAsync(LoginRequestDTO LoginRequest)
+        public async Task<Usuario?> ObterUsuarioAsync(LoginRequestDTO LoginRequest)
         {
-            var usuario = await _db.Users
+            var usuario = await _db.Usuarios
                 .Where(u => u.Email == LoginRequest.Login|| u.RA == LoginRequest.Login)
                 .FirstOrDefaultAsync();
 
@@ -58,7 +58,7 @@ namespace ClassHub.ClassHubContext.Services
             return result == PasswordVerificationResult.Success ? usuario : null;
         }
 
-        public string GerarToken(User user)
+        public string GerarToken(Usuario usuario)
         {
             var jwtSection = _configuration.GetSection("Jwt");
             var key = Encoding.ASCII.GetBytes(jwtSection["Key"]);
@@ -66,9 +66,9 @@ namespace ClassHub.ClassHubContext.Services
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Nome),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
+                new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+                new Claim(ClaimTypes.Name, usuario.Nome),
+                new Claim(ClaimTypes.Role, usuario.TipoUsuario.ToString())
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

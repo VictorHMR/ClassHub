@@ -8,7 +8,7 @@ namespace ClassHub.ClassHubContext
         public ClassHubDbContext(DbContextOptions<ClassHubDbContext> options)
             : base(options) { }
 
-        public DbSet<User> Users => Set<User>();
+        public DbSet<Usuario> Usuarios => Set<Usuario>();
 
     }
 }

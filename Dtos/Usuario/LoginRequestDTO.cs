@@ -1,4 +1,4 @@
-﻿namespace ClassHub.Dtos.Users
+﻿namespace ClassHub.Dtos.Usuario
 {
     public class LoginRequestDTO
     {
