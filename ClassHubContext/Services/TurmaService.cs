@@ -30,7 +30,36 @@ namespace ClassHub.ClassHubContext.Services
 
             return Turma;
         }
-        //Alterar retorno para que PaginacaoResult tenha uma DTO
+
+        public async Task EditarTurmaAsync(EditarTurmaRequestDTO turma)
+        {
+            Turma? turmaDB = await _db.Turmas.FindAsync(turma.IdTurma);
+
+            if(turmaDB is null)
+                throw new Exception("Turma não encontrada");
+
+            turmaDB.Nome = turma.Nome;
+            turmaDB.IdProfessor = turma.IdProfessor;
+            turmaDB.DtFim = turma.DtFim;
+
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task DeletarTurmaAsync(int idTurma)
+        {
+            Turma? turma = await _db.Turmas.FindAsync(idTurma);
+            if (turma is null)
+                throw new Exception("Turma não encontrada");
+
+            var possuiAlunos = _db.AlunoTurmas.Any(at => at.IdTurma == idTurma);
+
+            if(possuiAlunos)
+                throw new Exception("Existem alunos vinculados a turma, favor remove-los antes de efetuar a deleção");
+
+            _db.Turmas.Remove(turma);
+            await _db.SaveChangesAsync();
+        }
+
         public async Task<PaginacaoResult<ListarTurmaResponseDTO>> ListarTurmasAsync(int pagina = 1, int tamanhoPagina = 10)
         {
             if (pagina < 1) pagina = 1;
@@ -53,12 +82,42 @@ namespace ClassHub.ClassHubContext.Services
                     DtFim = t.DtFim,
                     QtdAlunos = t.Matriculas.Count,
                     NomeProfessor = t.Professor.Nome
-                })
-                .ToListAsync();
+                }).ToListAsync();
 
             return new PaginacaoResult<ListarTurmaResponseDTO>
             {
                 Itens = turmas,
+                PaginaAtual = pagina,
+                TamanhoPagina = tamanhoPagina,
+                TotalItens = total,
+                TotalPaginas = (int)Math.Ceiling(total / (double)tamanhoPagina)
+            };
+        }
+
+        public async Task<PaginacaoResult<ListarAlunosTurmaResponseDTO>> ListarAlunosTurmaAsync(int idTurma, int pagina = 1, int tamanhoPagina = 10) 
+        {
+            if (pagina < 1) pagina = 1;
+            if (tamanhoPagina < 1) tamanhoPagina = 10;
+            var query = _db.Usuarios
+                            .Include(x => x.Matriculas)
+                            .Where(u => u.Matriculas.Any(m => m.IdTurma == idTurma))
+                            .OrderBy(t => t.Nome)
+                            .AsQueryable();
+
+            var total = await query.CountAsync();
+
+            var alunos = await query
+                .Skip((pagina - 1) * tamanhoPagina)
+                .Take(tamanhoPagina)
+                .Select(t => new ListarAlunosTurmaResponseDTO
+                {
+                    IdAluno = t.Id,
+                    Nome = t.Nome
+                }).ToListAsync();
+
+            return new PaginacaoResult<ListarAlunosTurmaResponseDTO>
+            {
+                Itens = alunos,
                 PaginaAtual = pagina,
                 TamanhoPagina = tamanhoPagina,
                 TotalItens = total,
@@ -73,14 +132,28 @@ namespace ClassHub.ClassHubContext.Services
                 .Select(u => u.Id)
                 .FirstOrDefault();
 
-            var alunoTurma = new AlunoTurma
+            var alunoTurma = await _db.AlunoTurmas
+                .FirstOrDefaultAsync(at => at.IdAluno == idAluno && at.IdTurma == request.IdTurma);
+
+            if (alunoTurma is null && !request.FlDesvincular)
             {
-                IdAluno = idAluno,
-                IdTurma = request.IdTurma
-            };
-            _db.AlunoTurmas.Add(alunoTurma);
+                alunoTurma = new AlunoTurma
+                {
+                    IdAluno = idAluno,
+                    IdTurma = request.IdTurma
+                };
+                _db.AlunoTurmas.Add(alunoTurma);
+            }
+            else
+            {
+                if (request.FlDesvincular && alunoTurma is not null)
+                {
+                    _db.AlunoTurmas.Remove(alunoTurma!);
+                }
+            }
             await _db.SaveChangesAsync();
         }
+
 
     }
 }

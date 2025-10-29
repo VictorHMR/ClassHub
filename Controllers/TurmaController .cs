@@ -22,12 +22,26 @@ namespace ClassHub.Controllers
         /// <param name="page">Página pesquisada</param>
         /// <param name="pageSize">Tamanho da página</param>
         /// <returns>Lista de turmas e outras informações para paginação</returns>
-        [HttpGet]
+        [HttpGet("Listar")]
         [Authorize]
-        public async Task<IActionResult> ListarTurmas([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> Listar([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var result = await _turmaService.ListarTurmasAsync(page, pageSize);
+            return Ok(result);
+        }
 
+        /// <summary>
+        /// Realiza uma listagem paginada de alunos matriculados em uma turma especifica.
+        /// </summary>
+        /// <param name="idTurma">Id da turma</param>
+        /// <param name="page">Página pesquisada</param>
+        /// <param name="pageSize">Tamanho da página</param>
+        /// <returns>Lista de alunos e outras informações para paginação</returns>
+        [HttpGet("ListarAlunos")]
+        [Authorize]
+        public async Task<IActionResult> ListarAlunos([FromQuery] int idTurma, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _turmaService.ListarAlunosTurmaAsync(idTurma, page, pageSize);
             return Ok(result);
         }
 
@@ -36,26 +50,50 @@ namespace ClassHub.Controllers
         /// </summary>
         /// <param name="novaTurma">Objeto contendo informações da turma a ser criada</param>
         /// <returns>Ok</returns>
-        [HttpPost("CriarTurma")]
+        [HttpPost("Criar")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CriarTurma([FromBody] CriarTurmaRequestDTO novaTurma) 
+        public async Task<IActionResult> Criar([FromBody] CriarTurmaRequestDTO novaTurma) 
         {
             var result = await _turmaService.CriarTurmaAsync(novaTurma);
-
             return Ok();
         }
 
         /// <summary>
-        /// Realiza o vínculo de um aluno a uma turma.
+        /// Realiza a edição de uma turma existente.
         /// </summary>
-        /// <param name="novoVinculo">Objeto contendo RA do aluno e da turma que deseja vincular</param>
+        /// <param name="turma">Objeto contendo informações da turma a ser editada</param>
         /// <returns>Ok</returns>
-        [HttpPost("VincularAlunoTurma")]
+        [HttpPost("Editar")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> VincularAlunoTurma([FromBody] VincularAlunoTurmaRequestDTO novoVinculo)
+        public async Task<IActionResult> Editar([FromBody] EditarTurmaRequestDTO turma)
+        {
+            await _turmaService.EditarTurmaAsync(turma);
+            return Ok();
+        }
+
+        /// <summary>
+        /// Realiza a deleção de uma turma existente caso a mesma não possua alunos vinculados.
+        /// </summary>
+        /// <param name="idTurma">Objeto contendo id da turma a ser deletada</param>
+        /// <returns>Ok</returns>
+        [HttpDelete("Deletar")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Deletar([FromQuery] int idTurma)
+        {
+            await _turmaService.DeletarTurmaAsync(idTurma);
+            return Ok();
+        }
+
+        /// <summary>
+        /// Realiza o vínculo ou a remoção do vinculo de um aluno a uma turma.
+        /// </summary>
+        /// <param name="novoVinculo">Objeto contendo RA do aluno, id da turma e flag de remoção do vinculo</param>
+        /// <returns>Ok</returns>
+        [HttpPost("VincularAluno")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> VincularAluno([FromBody] VincularAlunoTurmaRequestDTO novoVinculo)
         {
             await _turmaService.VincularAlunoTurmaAsync(novoVinculo);
-
             return Ok();
         }
 
