@@ -23,8 +23,6 @@ namespace ClassHub.ClassHubContext.Services
             _db = db;
             _hasher = new PasswordHasher<Usuario>();
             _configuration = configuration;
-
-
         }
 
         public async Task<Usuario> CriarUsuarioAsync(CriarUsuarioRequestDTO novoUsuario)
@@ -34,14 +32,16 @@ namespace ClassHub.ClassHubContext.Services
                 Nome = novoUsuario.Nome,
                 Email = novoUsuario.Email,
                 CPF = novoUsuario.CPF,
-                TipoUsuario = novoUsuario.TipoUsuario
+                TipoUsuario = novoUsuario.TipoUsuario,
+                RA = string.Empty
             };
 
             usuario.Senha = _hasher.HashPassword(usuario, novoUsuario.Senha);
-            usuario.RA = usuario.TipoUsuario != TipoUsuario.Aluno ? usuario.Email : $"{DateTime.Now.Year}{usuario.Id:D3}";
             _db.Usuarios.Add(usuario);
-
             await _db.SaveChangesAsync();
+            usuario.RA = usuario.TipoUsuario != TipoUsuario.Aluno ? usuario.Email : $"{DateTime.Now.Year}{usuario.Id:D3}";
+            await _db.SaveChangesAsync();
+
 
             return usuario;
         }

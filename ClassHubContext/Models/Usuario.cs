@@ -19,5 +19,10 @@ namespace ClassHub.ClassHubContext.Models
         public string Senha { get; set; }
         [Required]
         public TipoUsuario TipoUsuario { get; set; }
+
+        public ICollection<Turma>? TurmasLecionadas { get; set; }
+        public ICollection<AlunoTurma> Matriculas { get; set; } = new List<AlunoTurma>();
+
+
     }
 }

@@ -8,6 +8,7 @@ namespace ClassHub.ClassHubContext
         public static IServiceCollection AddBackendServices(this IServiceCollection services)
         {
             services.AddScoped<UsuarioService>();
+            services.AddScoped<TurmaService>();
             return services;
         }
     }

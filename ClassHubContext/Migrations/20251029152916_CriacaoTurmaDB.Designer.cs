@@ -3,6 +3,7 @@ using System;
 using ClassHub.ClassHubContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClassHub.ClassHubContext.Migrations
 {
     [DbContext(typeof(ClassHubDbContext))]
-    partial class ClassHubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251029152916_CriacaoTurmaDB")]
+    partial class CriacaoTurmaDB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
