@@ -1,0 +1,30 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authentication
+@using System.Security.Claims
+@inject NavigationManager Navigation
+
+<h1>Home</h1>
+@if(Message != string.Empty){ <span>@Message</span>}
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    private string Message = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        var autenticationState = await authenticationStateTask;
+        if (!autenticationState.User.Identity.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login", true);
+        }
+        else
+        {
+            #if DEBUG
+            Message = $"Nome: {autenticationState.User.Identity.Name}. ID: {autenticationState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value}. Cargo: {autenticationState.User.FindFirst(ClaimTypes.Role)?.Value}";
+            #endif
+        }
+        await base.OnInitializedAsync();
+
+    }
+}
+

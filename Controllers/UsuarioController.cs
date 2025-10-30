@@ -26,14 +26,7 @@ namespace ClassHub.Controllers
             var usuario = await _usuarioService.ObterUsuarioAsync(login);
             if (usuario == null) return Unauthorized("Login ou senha inválidos");
 
-            return Ok(new LoginResponseDTO
-            {
-                Token = _usuarioService.GerarToken(usuario),
-                Nome = usuario.Nome,
-                CPF = usuario.CPF,
-                Email = usuario.Email,
-                TipoUsuario = usuario.TipoUsuario
-            });
+            return Ok(usuario);
         }
 
         /// <summary>

@@ -1,0 +1,23 @@
+﻿@page "/logout"
+@using Microsoft.AspNetCore.Authentication
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+
+<h3>Saindo...</h3>
+<p>Aguarde, você será redirecionado para a tela de login.</p>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var httpContext = HttpContextAccessor.HttpContext;
+
+        if (httpContext?.User?.Identity?.IsAuthenticated == true)
+        {
+            await httpContext.SignOutAsync();
+        }
+
+        Navigation.NavigateTo("/login", true);
+
+        await base.OnInitializedAsync();
+    }
+}

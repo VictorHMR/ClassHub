@@ -1,0 +1,52 @@
+﻿@page "/login"
+@using ClassHub.ClassHubContext.Services
+@using ClassHub.ViewModels
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject UsuarioService _usuarioService
+@inject NavigationManager Navigation
+
+<div class="row">
+    <EditForm Model="@Model" OnValidSubmit="Authenticate" FormName="LoginForm">
+        <DataAnnotationsValidator />
+        <InputText @bind-Value="Model.Login" placeholder="Email ou RA" class="form-control mb-2" />
+        <ValidationMessage For="()=> Model.Login"/>
+        <InputText @bind-Value="Model.Senha" type="password" placeholder="Senha" class="form-control mb-2" />
+        <ValidationMessage For="()=> Model.Senha"/>
+        <button type="submit" class="btn btn-primary">Entrar</button>
+        <span class="text-danger">@errorMessage</span>
+    </EditForm>
+</div>
+
+ 
+@code{
+    [CascadingParameter]  
+    public HttpContext? HttpContext { get; set; } 
+    [SupplyParameterFromForm]
+    public LoginViewModel Model { get; set; } = new();
+    private string errorMessage = string.Empty;
+
+    private async Task Authenticate()
+    {
+        var usuario = await _usuarioService.ObterUsuarioAsync(new Dtos.Usuario.LoginRequestDTO{Login=Model.Login, Senha=Model.Senha});
+        if(usuario is null)
+        {
+            errorMessage = "Login ou senha inválidos.";
+            return;
+        }
+
+        var claims = new[]
+        {
+                new Claim(ClaimTypes.NameIdentifier, usuario.IdUsuario.ToString()),
+                new Claim(ClaimTypes.Name, usuario.Nome),
+                new Claim(ClaimTypes.Role, usuario.TipoUsuario.ToString())
+        };
+
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+        await HttpContext.SignInAsync(principal);
+        Navigation.NavigateTo("/");
+        
+    }
+}

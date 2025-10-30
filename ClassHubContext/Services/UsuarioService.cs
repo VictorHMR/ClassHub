@@ -46,7 +46,7 @@ namespace ClassHub.ClassHubContext.Services
             return usuario;
         }
 
-        public async Task<Usuario?> ObterUsuarioAsync(LoginRequestDTO LoginRequest)
+        public async Task<LoginResponseDTO?> ObterUsuarioAsync(LoginRequestDTO LoginRequest)
         {
             var usuario = await _db.Usuarios
                 .Where(u => u.Email == LoginRequest.Login|| u.RA == LoginRequest.Login)
@@ -55,7 +55,16 @@ namespace ClassHub.ClassHubContext.Services
             if (usuario == null) return null;
 
             var result = _hasher.VerifyHashedPassword(usuario, usuario.Senha, LoginRequest.Senha);
-            return result == PasswordVerificationResult.Success ? usuario : null;
+
+            return result == PasswordVerificationResult.Success ? new LoginResponseDTO
+            {
+                IdUsuario = usuario.Id,
+                Token = GerarToken(usuario),
+                Nome = usuario.Nome,
+                CPF = usuario.CPF,
+                Email = usuario.Email,
+                TipoUsuario = usuario.TipoUsuario
+            } : null;
         }
 
         public string GerarToken(Usuario usuario)
@@ -82,5 +91,17 @@ namespace ClassHub.ClassHubContext.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
+        public async Task<Usuario?> LoginAsync(string login, string senha)
+        {
+            var usuario = await _db.Usuarios.FirstOrDefaultAsync(u => u.Email == login || u.RA == login);
+
+            if (usuario == null)
+                return null;
+
+            var result = _hasher.VerifyHashedPassword(usuario, usuario.Senha, senha);
+            return result == PasswordVerificationResult.Success ? usuario : null;
+        }
+
     }
 }
