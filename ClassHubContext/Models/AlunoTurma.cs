@@ -15,10 +15,12 @@ namespace ClassHub.ClassHubContext.Models
         [Required]
         [ForeignKey(nameof(Turma))]
         public int IdTurma { get; set; }
+        public DateTime DtMatricula { get; set; } = DateTime.Now;
 
         public Usuario Aluno { get; set; } = null!;
         public Turma Turma { get; set; } = null!;
 
-        public DateTime DtMatricula { get; set; } = DateTime.Now;
+        public ICollection<Nota> NotasLancadas { get; set; } = new List<Nota>();
+
     }
 }

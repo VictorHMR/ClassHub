@@ -9,6 +9,7 @@ namespace ClassHub.ClassHubContext
         {
             services.AddScoped<UsuarioService>();
             services.AddScoped<TurmaService>();
+            services.AddScoped<NotaService>();
             return services;
         }
     }

@@ -63,7 +63,7 @@ namespace ClassHub.Controllers
         /// </summary>
         /// <param name="turma">Objeto contendo informações da turma a ser editada</param>
         /// <returns>Ok</returns>
-        [HttpPost("Editar")]
+        [HttpPut("Editar")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Editar([FromBody] EditarTurmaRequestDTO turma)
         {

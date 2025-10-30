@@ -10,7 +10,8 @@ namespace ClassHub.ClassHubContext
 
         public DbSet<Usuario> Usuarios => Set<Usuario>();
         public DbSet<Turma> Turmas => Set<Turma>();
-        public DbSet<AlunoTurma> AlunoTurmas { get; set; }
+        public DbSet<AlunoTurma> AlunoTurmas => Set<AlunoTurma>();
+        public DbSet<Nota> Notas => Set<Nota>();
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -38,6 +39,12 @@ namespace ClassHub.ClassHubContext
             modelBuilder.Entity<AlunoTurma>()
                 .HasIndex(at => new { at.IdAluno, at.IdTurma })
                 .IsUnique();
+
+            modelBuilder.Entity<Nota>()
+                .HasOne(an => an.AlunoTurma)
+                .WithMany(at => at.NotasLancadas)
+                .HasForeignKey(an => an.IdAlunoTurma)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
