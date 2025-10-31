@@ -94,37 +94,6 @@ namespace ClassHub.ClassHubContext.Services
             };
         }
 
-        public async Task<PaginacaoResult<ListarAlunosTurmaResponseDTO>> ListarAlunosTurmaAsync(int idTurma, int pagina = 1, int tamanhoPagina = 10) 
-        {
-            if (pagina < 1) pagina = 1;
-            if (tamanhoPagina < 1) tamanhoPagina = 10;
-            var query = _db.Usuarios
-                            .Include(x => x.Matriculas)
-                            .Where(u => u.Matriculas.Any(m => m.IdTurma == idTurma))
-                            .OrderBy(t => t.Nome)
-                            .AsQueryable();
-
-            var total = await query.CountAsync();
-
-            var alunos = await query
-                .Skip((pagina - 1) * tamanhoPagina)
-                .Take(tamanhoPagina)
-                .Select(t => new ListarAlunosTurmaResponseDTO
-                {
-                    IdAluno = t.Id,
-                    Nome = t.Nome
-                }).ToListAsync();
-
-            return new PaginacaoResult<ListarAlunosTurmaResponseDTO>
-            {
-                Itens = alunos,
-                PaginaAtual = pagina,
-                TamanhoPagina = tamanhoPagina,
-                TotalItens = total,
-                TotalPaginas = (int)Math.Ceiling(total / (double)tamanhoPagina)
-            };
-        }
-
         public async Task VincularAlunoTurmaAsync(VincularAlunoTurmaRequestDTO request)
         {
             var idAluno = _db.Usuarios

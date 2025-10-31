@@ -1,5 +1,6 @@
 ﻿using ClassHub.ClassHubContext.Services;
 using ClassHub.Dtos.Usuario;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,7 +35,7 @@ namespace ClassHub.Controllers
         /// </summary>
         /// <param name="novoUsuario">Informações do usuário a ser criado</param>
 #if !DEBUG
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin", AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
 #endif
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CriarUsuarioRequestDTO novoUsuario)
@@ -42,6 +43,19 @@ namespace ClassHub.Controllers
             var usuario = await _usuarioService.CriarUsuarioAsync(novoUsuario);
             return Ok();
         }
+
+        /// <summary>
+        /// Lista usuários paginados conforme filtro recebido
+        /// </summary>
+        /// <param name="filtro">Informações do filtro para a listagem</param>
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("listar")]
+        public async Task<IActionResult> Listar([FromBody] ListarUsuarioRequestDTO filtro)
+        {
+            var lstUsuarios = await _usuarioService.ListarUsuarios(filtro);
+            return Ok(lstUsuarios);
+        }
+
 
     }
 }

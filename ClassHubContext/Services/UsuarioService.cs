@@ -1,4 +1,5 @@
 ﻿using ClassHub.ClassHubContext.Models;
+using ClassHub.Dtos.Turma;
 using ClassHub.Dtos.Usuario;
 using ClassHub.Enums;
 using Microsoft.AspNetCore.Identity;
@@ -101,6 +102,52 @@ namespace ClassHub.ClassHubContext.Services
 
             var result = _hasher.VerifyHashedPassword(usuario, usuario.Senha, senha);
             return result == PasswordVerificationResult.Success ? usuario : null;
+        }
+
+        public async Task<PaginacaoResult<UsuarioDTO>> ListarUsuarios(ListarUsuarioRequestDTO request)
+        {
+            if (request.nrPagina < 1) request.nrPagina = 1;
+            if (request.qtRegistros < 1) request.qtRegistros = 10;
+            var query = _db.Usuarios
+                .Include(x => x.Matriculas)
+                .AsQueryable();
+
+            if(request.idTurma != null)
+                query = query.Where(u => u.Matriculas.Any(m => m.IdTurma == request.idTurma));
+
+            if (!string.IsNullOrEmpty(request.pesquisa))
+                query = query.Where(u => u.Nome.StartsWith(request.pesquisa));
+
+            if(request.tipoUsuario != null)
+                query = query.Where(u => u.TipoUsuario == request.tipoUsuario);
+
+            if (request.ordenacao == Filtros.Ordenacao.Ascendente)
+                query = query.OrderBy(t => t.Nome);
+            else
+                query = query.OrderByDescending(t => t.Nome);
+
+            var total = await query.CountAsync();
+
+            var usuarios = await query
+                .Skip((request.nrPagina - 1) * request.qtRegistros)
+                .Take(request.qtRegistros)
+                .Select(t => new UsuarioDTO
+                {
+                    IdUsuario = t.Id,
+                    Nome = t.Nome,
+                    Email = t.Email,
+                    RA = t.RA,
+                    TipoUsuario = t.TipoUsuario
+                }).ToListAsync();
+
+            return new PaginacaoResult<UsuarioDTO>
+            {
+                Itens = usuarios,
+                PaginaAtual = request.nrPagina,
+                TamanhoPagina = request.qtRegistros,
+                TotalItens = total,
+                TotalPaginas = (int)Math.Ceiling(total / (double)request.qtRegistros)
+            };
         }
 
     }

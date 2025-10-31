@@ -1,5 +1,6 @@
 ﻿using ClassHub.ClassHubContext.Services;
 using ClassHub.Dtos.Turma;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +8,7 @@ namespace ClassHub.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Produces("application/json")]
     public class TurmaController: ControllerBase
     {
@@ -30,20 +32,6 @@ namespace ClassHub.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        /// Realiza uma listagem paginada de alunos matriculados em uma turma especifica.
-        /// </summary>
-        /// <param name="idTurma">Id da turma</param>
-        /// <param name="page">Página pesquisada</param>
-        /// <param name="pageSize">Tamanho da página</param>
-        /// <returns>Lista de alunos e outras informações para paginação</returns>
-        [HttpGet("ListarAlunos")]
-        [Authorize]
-        public async Task<IActionResult> ListarAlunos([FromQuery] int idTurma, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        {
-            var result = await _turmaService.ListarAlunosTurmaAsync(idTurma, page, pageSize);
-            return Ok(result);
-        }
 
         /// <summary>
         /// Realiza a criação de uma nova turma no sistema.
