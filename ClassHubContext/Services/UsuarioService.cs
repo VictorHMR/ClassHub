@@ -26,7 +26,7 @@ namespace ClassHub.ClassHubContext.Services
             _configuration = configuration;
         }
 
-        public async Task<Usuario> CriarUsuarioAsync(CriarUsuarioRequestDTO novoUsuario)
+        public async Task<int> CriarUsuarioAsync(CriarUsuarioRequestDTO novoUsuario)
         {
             var usuario = new Usuario
             {
@@ -44,7 +44,7 @@ namespace ClassHub.ClassHubContext.Services
             await _db.SaveChangesAsync();
 
 
-            return usuario;
+            return usuario.Id;
         }
 
         public async Task<LoginResponseDTO?> ObterUsuarioAsync(LoginRequestDTO LoginRequest)
@@ -148,6 +148,15 @@ namespace ClassHub.ClassHubContext.Services
                 TotalItens = total,
                 TotalPaginas = (int)Math.Ceiling(total / (double)request.qtRegistros)
             };
+        }
+
+        public async Task DeletarUsuario(int idUsuario)
+        {
+            var usuario = await _db.Usuarios.Include(u => u.Matriculas).Include(u=> u.TurmasLecionadas).FirstOrDefaultAsync(u => u.Id == idUsuario);
+            if (usuario.Matriculas.Any() || (usuario.TurmasLecionadas?.Any() ?? true))
+                throw new Exception("Não é possivel remover o usuário, será necessário remover seu vinculo com suas turmas primeiro.");
+            _db.Usuarios.Remove(usuario);
+            await _db.SaveChangesAsync();
         }
 
     }

@@ -1,0 +1,169 @@
+﻿@using ClassHub.ClassHubContext.Models
+@using ClassHub.ClassHubContext.Services
+@using ClassHub.Dtos.Usuario
+@using ClassHub.Enums
+@inject UsuarioService UsuarioService
+
+<div class="usuario-list-container">
+    <h3>@Title</h3>
+
+    <div class="filtros">
+        <input type="text" @bind="request.pesquisa" placeholder="Pesquisar por nome..." class="form-control" />
+        <select @bind="request.ordenacao" class="form-select">
+            <option value="Ascendente">A-Z</option>
+            <option value="Descendente">Z-A</option>
+        </select>
+        <button class="btn btn-primary" @onclick="CarregarUsuarios">Filtrar</button>
+    </div>
+
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>RA</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (usuarios == null)
+            {
+                <tr><td colspan="4">Carregando...</td></tr>
+            }
+            else if (!usuarios.Any())
+            {
+                <tr><td colspan="4">Nenhum usuário encontrado</td></tr>
+            }
+            else
+            {
+                @foreach (var u in usuarios)
+                {
+                    <tr>
+                        <td>@u.RA</td>
+                        <td>@u.Nome</td>
+                        <td>@u.Email</td>
+                        <td>
+                            <button class="btn btn-outline-danger btn-sm" @onclick="() => ConfirmarExclusao(u)">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    @if (usuarioSelecionado != null)
+    {
+        <div class="modal-backdrop fade show"></div>
+        <div class="modal fade show d-block" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Confirmar exclusão</h5>
+                        <button type="button" class="btn-close btn-close-white" @onclick="FecharModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        Tem certeza que deseja excluir o usuário <strong>@usuarioSelecionado.Nome</strong>?
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="FecharModal">Cancelar</button>
+                        <button class="btn btn-danger" @onclick="DeletarUsuarioConfirmado">Excluir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+
+    @if (paginacao != null && paginacao.TotalPaginas > 1)
+    {
+        <div class="paginacao mt-2">
+            <button class="btn btn-sm btn-secondary" @onclick="Anterior" disabled="@(request.nrPagina <= 1)">Anterior</button>
+            <span class="mx-2">Página @request.nrPagina de @paginacao.TotalPaginas</span>
+            <button class="btn btn-sm btn-secondary" @onclick="Proximo" disabled="@(request.nrPagina >= paginacao.TotalPaginas)">Próxima</button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Lista de Usuários";
+    [Parameter] public int? IdTurma { get; set; }
+    [Parameter] public TipoUsuario? pTipoUsuario { get; set; } = null;
+
+    private ListarUsuarioRequestDTO request = new()
+    {
+        nrPagina = 1,
+        qtRegistros = 10,
+        ordenacao = Filtros.Ordenacao.Ascendente,
+    };
+
+    private PaginacaoResult<UsuarioDTO>? paginacao;
+    private IEnumerable<UsuarioDTO>? usuarios;
+    private UsuarioDTO? usuarioSelecionado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IdTurma != null)
+            request.idTurma = IdTurma;
+        if (pTipoUsuario != null)
+            request.tipoUsuario = pTipoUsuario;
+        await CarregarUsuarios();
+    }
+
+    public async Task CarregarUsuariosPublico()
+    {
+        await CarregarUsuarios();
+        StateHasChanged(); 
+    }
+
+    private async Task CarregarUsuarios()
+    {
+        paginacao = await UsuarioService.ListarUsuarios(request);
+        usuarios = paginacao.Itens;
+    }
+
+    private async Task Proximo()
+    {
+        if (request.nrPagina < paginacao.TotalPaginas)
+        {
+            request.nrPagina++;
+            await CarregarUsuarios();
+        }
+    }
+
+    private async Task Anterior()
+    {
+        if (request.nrPagina > 1)
+        {
+            request.nrPagina--;
+            await CarregarUsuarios();
+        }
+    }
+    private void ConfirmarExclusao(UsuarioDTO usuario)
+    {
+        usuarioSelecionado = usuario;
+    }
+
+    private void FecharModal()
+    {
+        usuarioSelecionado = null;
+    }
+
+    private async Task DeletarUsuarioConfirmado()
+    {
+        if (usuarioSelecionado == null)
+            return;
+
+        try
+        {
+            //ainda não implementado
+            await UsuarioService.DeletarUsuario(usuarioSelecionado.IdUsuario);
+            usuarioSelecionado = null;
+            await CarregarUsuarios();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao deletar: {ex.Message}");
+        }
+    }
+}

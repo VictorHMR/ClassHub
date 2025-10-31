@@ -10,6 +10,5 @@ namespace ClassHub.Dtos.Usuario
         public string Email { get; set; }
         public TipoUsuario TipoUsuario { get; set; }
 
-
     }
 }

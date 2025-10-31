@@ -56,6 +56,18 @@ namespace ClassHub.Controllers
             return Ok(lstUsuarios);
         }
 
+        /// <summary>
+        /// Remove um usuário
+        /// </summary>
+        /// <param name="idUsuario">Id do usuário a ser deletado</param>
+        [Authorize(Roles ="Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpDelete("deletar")]
+        public async Task<IActionResult> Deletar([FromQuery] int idUsuario)
+        {
+            await _usuarioService.DeletarUsuario(idUsuario);
+            return Ok();
+        }
+
 
     }
 }

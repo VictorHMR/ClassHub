@@ -1,0 +1,43 @@
+﻿@page "/professores"
+@using ClassHub.Components.Shared
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Professores</PageTitle>
+
+<button class="btn btn-primary mb-3" @onclick="AbrirModal">Adicionar Professor</button>
+
+@if (mostrarModal)
+{
+    <UsuarioAdd pTipoUsuario="Enums.TipoUsuario.Professor" OnUsuarioAdicionado="AtualizarLista" OnFecharModal="FecharModal" />
+}
+<UsuarioList @ref="usuarioList" Title="Todos os professores" pTipoUsuario="Enums.TipoUsuario.Professor" />
+
+@code {
+    private UsuarioList? usuarioList;
+    private bool mostrarModal = false;
+
+    private async Task AtualizarLista()
+    {
+        if (usuarioList != null)
+        {
+            await usuarioList.CarregarUsuariosPublico();
+        }
+    }
+
+    private void AbrirModal()
+    {
+        mostrarModal = true;
+    }
+
+    private void FecharModal()
+    {
+        mostrarModal = false;
+    }
+
+    private async Task UsuarioAdicionado()
+    {
+        await AtualizarLista();
+        FecharModal();
+    }
+}

@@ -1,0 +1,45 @@
+﻿@page "/alunos"
+@using ClassHub.ClassHubContext.Services
+@using ClassHub.Components.Shared
+@rendermode InteractiveServer
+@inject UsuarioService _usuarioService
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Alunos</PageTitle>
+
+<button class="btn btn-primary mb-3" @onclick="AbrirModal">Adicionar Aluno</button>
+
+@if (mostrarModal)
+{
+    <UsuarioAdd pTipoUsuario="Enums.TipoUsuario.Aluno" OnUsuarioAdicionado="UsuarioAdicionado" OnFecharModal="FecharModal" />
+}
+<UsuarioList @ref="usuarioList" Title="Todos os alunos" pTipoUsuario="Enums.TipoUsuario.Aluno" />
+
+@code {
+    private UsuarioList? usuarioList;
+    private bool mostrarModal = false;
+
+    private async Task AtualizarLista()
+    {
+        if (usuarioList != null)
+        {
+            await usuarioList.CarregarUsuariosPublico(); 
+        }
+    }
+
+    private void AbrirModal()
+    {
+        mostrarModal = true;
+    }
+
+    private void FecharModal()
+    {
+        mostrarModal = false;
+    }
+
+    private async Task UsuarioAdicionado()
+    {
+        await AtualizarLista();
+        FecharModal();
+    }
+}
