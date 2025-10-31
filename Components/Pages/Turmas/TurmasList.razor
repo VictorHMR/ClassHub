@@ -1,0 +1,206 @@
+﻿@page "/turmas"
+@using ClassHub.ClassHubContext.Models
+@using ClassHub.ClassHubContext.Services
+@using ClassHub.Dtos.Turma
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthStateProvider
+@inject TurmaService TurmaService
+@rendermode InteractiveServer
+
+<div class="turma-list-container">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+        <h3 class="mb-0">@Title</h3>
+        @if (isAdmin)
+        {
+            <button class="btn btn-success" @onclick="AbrirModal">Adicionar Turma</button>
+        }
+    </div>
+
+    <div class="filtros mb-3 d-flex gap-2 flex-wrap">
+        <input type="text" @bind="request.pesquisa" placeholder="Pesquisar por nome da turma..." class="form-control w-auto flex-fill" />
+        <select @bind="request.ordenacao" class="form-select w-auto">
+            <option value="Ascendente">A-Z</option>
+            <option value="Descendente">Z-A</option>
+        </select>
+        <button class="btn btn-primary" @onclick="CarregarTurmas">Filtrar</button>
+    </div>
+
+    @if (turmas == null)
+    {
+        <p>Carregando turmas...</p>
+    }
+    else if (!turmas.Any())
+    {
+        <p>Nenhuma turma encontrada.</p>
+    }
+    else
+    {
+<div class="row g-3">
+    @foreach (var turma in turmas)
+    {
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <div class="card shadow-sm h-100 position-relative">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div>
+                        <h5 class="card-title">@turma.Nome</h5>
+
+                        @if (isAdmin)
+                        {
+                            <button class="btn btn-outline-danger btn-sm position-absolute top-0 end-0 m-2"
+                                    title="Excluir"
+                                    @onclick="() => ConfirmarExclusao(turma)">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        }
+
+                        <p class="card-text mb-2 mt-3">
+                            <strong>Professor:</strong> @turma.NomeProfessor <br />
+                            <strong>Inicio:</strong> @turma.DtInicio.ToShortDateString() <br />
+                            <strong>Alunos:</strong> @turma.QtdAlunos 
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+    }
+
+    @if (turmaSelecionada != null && operacao == "DEL")
+    {
+        <div class="modal-backdrop fade show"></div>
+        <div class="modal fade show d-block" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Confirmar exclusão</h5>
+                        <button type="button" class="btn-close btn-close-white" @onclick="FecharModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        Tem certeza que deseja excluir a turma <strong>@turmaSelecionada.Nome</strong>?
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="FecharModal">Cancelar</button>
+                        <button class="btn btn-danger" @onclick="DeletarTurmaConfirmada">Excluir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (paginacao != null && paginacao.TotalPaginas > 1)
+    {
+        <div class="paginacao mt-3 text-center">
+            <button class="btn btn-sm btn-secondary" @onclick="Anterior" disabled="@(request.nrPagina <= 1)">Anterior</button>
+            <span class="mx-2">Página @request.nrPagina de @paginacao.TotalPaginas</span>
+            <button class="btn btn-sm btn-secondary" @onclick="Proximo" disabled="@(request.nrPagina >= paginacao.TotalPaginas)">Próxima</button>
+        </div>
+    }
+    @if (operacao == "ADD")
+    {
+        <TurmaAdd OnTurmaAdicionada="TurmaAdicionada" OnFecharModal="FecharModal" />
+    }
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Lista de Turmas";
+    [Parameter] public int? IdUsuario { get; set; } = null;
+
+
+    private ListarTurmaRequestDTO request = new()
+    {
+        nrPagina = 1,
+        qtRegistros = 10,
+        ordenacao = Enums.Filtros.Ordenacao.Ascendente,
+    };
+
+    private PaginacaoResult<TurmaDTO>? paginacao;
+    private IEnumerable<TurmaDTO>? turmas;
+    private TurmaDTO? turmaSelecionada;
+    private string operacao = "";
+    private bool isAdmin = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (!user.IsInRole("Admin"))
+            IdUsuario = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        else
+            isAdmin = true;
+
+        await CarregarTurmas();
+    }
+
+    public async Task CarregarTurmasPublico()
+    {
+        await CarregarTurmas();
+        StateHasChanged();
+    }
+
+    private async Task CarregarTurmas()
+    {
+        request.idUsuario = IdUsuario;
+        paginacao = await TurmaService.ListarTurmasAsync(request);
+        turmas = paginacao.Itens;
+    }
+
+    private void ConfirmarExclusao(TurmaDTO turma)
+    {
+        turmaSelecionada = turma;
+        operacao = "DEL";
+    }
+
+    private void FecharModal()
+    {
+        turmaSelecionada = null;
+        operacao = "";
+    }
+
+    private void AbrirModal()
+    {
+        operacao = "ADD";
+    }
+
+    private async Task DeletarTurmaConfirmada()
+    {
+        if (turmaSelecionada == null)
+            return;
+
+        try
+        {
+            await TurmaService.DeletarTurmaAsync(turmaSelecionada.IdTurma);
+            turmaSelecionada = null;
+            await CarregarTurmas();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao deletar turma: {ex.Message}");
+        }
+    }
+
+    private async Task Proximo()
+    {
+        if (request.nrPagina < paginacao.TotalPaginas)
+        {
+            request.nrPagina++;
+            await CarregarTurmas();
+        }
+    }
+
+    private async Task Anterior()
+    {
+        if (request.nrPagina > 1)
+        {
+            request.nrPagina--;
+            await CarregarTurmas();
+        }
+    }
+
+    private async Task TurmaAdicionada()
+    {
+        await CarregarTurmas();
+        FecharModal();
+    }
+}

@@ -5,13 +5,11 @@
 
 <PageTitle>Professores</PageTitle>
 
-<button class="btn btn-primary mb-3" @onclick="AbrirModal">Adicionar Professor</button>
-
 @if (mostrarModal)
 {
     <UsuarioAdd pTipoUsuario="Enums.TipoUsuario.Professor" OnUsuarioAdicionado="AtualizarLista" OnFecharModal="FecharModal" />
 }
-<UsuarioList @ref="usuarioList" Title="Todos os professores" pTipoUsuario="Enums.TipoUsuario.Professor" />
+<UsuarioList @ref="usuarioList" Title="Todos os professores" pTipoUsuario="Enums.TipoUsuario.Professor" OnAbrirModal="AbrirModal" />
 
 @code {
     private UsuarioList? usuarioList;

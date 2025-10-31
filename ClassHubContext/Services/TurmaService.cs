@@ -1,5 +1,6 @@
 ﻿using ClassHub.ClassHubContext.Models;
 using ClassHub.Dtos.Turma;
+using ClassHub.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +16,7 @@ namespace ClassHub.ClassHubContext.Services
             _db = db;
         }
 
-        public async Task<Turma> CriarTurmaAsync (CriarTurmaRequestDTO novaTurma)
+        public async Task<int> CriarTurmaAsync (CriarTurmaRequestDTO novaTurma)
         {
             var Turma = new Turma
             {
@@ -28,7 +29,7 @@ namespace ClassHub.ClassHubContext.Services
             _db.Turmas.Add(Turma);
             await _db.SaveChangesAsync();
 
-            return Turma;
+            return Turma.Id;
         }
 
         public async Task EditarTurmaAsync(EditarTurmaRequestDTO turma)
@@ -60,21 +61,33 @@ namespace ClassHub.ClassHubContext.Services
             await _db.SaveChangesAsync();
         }
 
-        public async Task<PaginacaoResult<ListarTurmaResponseDTO>> ListarTurmasAsync(int pagina = 1, int tamanhoPagina = 10)
+        public async Task<PaginacaoResult<TurmaDTO>> ListarTurmasAsync(ListarTurmaRequestDTO request)
         {
-            if (pagina < 1) pagina = 1;
-            if (tamanhoPagina < 1) tamanhoPagina = 10;
+            if (request.nrPagina< 1) request.nrPagina = 1;
+            if (request.qtRegistros < 1) request.qtRegistros = 10;
             var query = _db.Turmas
                 .Include(t => t.Professor)
+                .Include(u => u.Matriculas)
                 .OrderBy(t => t.Nome)
                 .AsQueryable();
+
+            if (request.idUsuario != null)
+                query = query.Where(u => u.Matriculas.Any(x => x.IdAluno == request.idUsuario) || u.IdProfessor == request.idUsuario);
+
+            if (!string.IsNullOrEmpty(request.pesquisa))
+                query = query.Where(u => u.Nome.StartsWith(request.pesquisa));
+
+            if (request.ordenacao == Filtros.Ordenacao.Ascendente)
+                query = query.OrderBy(t => t.Nome);
+            else
+                query = query.OrderByDescending(t => t.Nome);
 
             var total = await query.CountAsync();
 
             var turmas = await query
-                .Skip((pagina - 1) * tamanhoPagina)
-                .Take(tamanhoPagina)
-                .Select(t => new ListarTurmaResponseDTO
+                .Skip((request.nrPagina - 1) * request.qtRegistros)
+                .Take(request.qtRegistros)
+                .Select(t => new TurmaDTO
                 {
                     IdTurma = t.Id,
                     Nome = t.Nome,
@@ -84,13 +97,13 @@ namespace ClassHub.ClassHubContext.Services
                     NomeProfessor = t.Professor.Nome
                 }).ToListAsync();
 
-            return new PaginacaoResult<ListarTurmaResponseDTO>
+            return new PaginacaoResult<TurmaDTO>
             {
                 Itens = turmas,
-                PaginaAtual = pagina,
-                TamanhoPagina = tamanhoPagina,
+                PaginaAtual = request.nrPagina,
+                TamanhoPagina = request.qtRegistros,
                 TotalItens = total,
-                TotalPaginas = (int)Math.Ceiling(total / (double)tamanhoPagina)
+                TotalPaginas = (int)Math.Ceiling(total / (double)request.qtRegistros)
             };
         }
 

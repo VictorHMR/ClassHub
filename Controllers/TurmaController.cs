@@ -24,11 +24,11 @@ namespace ClassHub.Controllers
         /// <param name="page">Página pesquisada</param>
         /// <param name="pageSize">Tamanho da página</param>
         /// <returns>Lista de turmas e outras informações para paginação</returns>
-        [HttpGet("Listar")]
+        [HttpPost("Listar")]
         [Authorize]
-        public async Task<IActionResult> Listar([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> Listar([FromBody] ListarTurmaRequestDTO request)
         {
-            var result = await _turmaService.ListarTurmasAsync(page, pageSize);
+            var result = await _turmaService.ListarTurmasAsync(request);
             return Ok(result);
         }
 

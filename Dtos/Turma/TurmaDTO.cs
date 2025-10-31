@@ -1,6 +1,6 @@
 ﻿namespace ClassHub.Dtos.Turma
 {
-    public class ListarTurmaResponseDTO
+    public class TurmaDTO
     {
         public int IdTurma { get; set; }
         public string Nome { get; set; }

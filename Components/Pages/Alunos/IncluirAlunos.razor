@@ -7,13 +7,12 @@
 
 <PageTitle>Alunos</PageTitle>
 
-<button class="btn btn-primary mb-3" @onclick="AbrirModal">Adicionar Aluno</button>
 
 @if (mostrarModal)
 {
-    <UsuarioAdd pTipoUsuario="Enums.TipoUsuario.Aluno" OnUsuarioAdicionado="UsuarioAdicionado" OnFecharModal="FecharModal" />
+    <UsuarioAdd pTipoUsuario="Enums.TipoUsuario.Aluno" OnUsuarioAdicionado="UsuarioAdicionado" OnFecharModal="FecharModal"  />
 }
-<UsuarioList @ref="usuarioList" Title="Todos os alunos" pTipoUsuario="Enums.TipoUsuario.Aluno" />
+<UsuarioList @ref="usuarioList" Title="Todos os alunos" pTipoUsuario="Enums.TipoUsuario.Aluno" OnAbrirModal="AbrirModal" />
 
 @code {
     private UsuarioList? usuarioList;

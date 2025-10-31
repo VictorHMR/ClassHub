@@ -1,0 +1,51 @@
+﻿@using ClassHub.ClassHubContext.Models
+@using ClassHub.ClassHubContext.Services
+@using ClassHub.Dtos.Turma
+@using ClassHub.Enums
+@inject TurmaService TurmaService
+
+<div class="modal-backdrop fade show"></div>
+<div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adicionar Turma</h5>
+                <button type="button" class="btn-close" @onclick="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" @bind="request.Nome" placeholder="Nome da Turma" class="form-control mb-2" />
+                <input type="text" @bind="request.IdProfessor" placeholder="CPF" class="form-control mb-2" />
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="Fechar">Cancelar</button>
+                <button class="btn btn-primary" @onclick="AdicionarTurma">Adicionar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnTurmaAdicionada { get; set; }
+    [Parameter] public EventCallback OnFecharModal { get; set; }
+
+    private CriarTurmaRequestDTO request = new();
+
+
+    private async Task AdicionarTurma()
+    {
+        int? idUsuario = await TurmaService.CriarTurmaAsync(request);
+
+        if (idUsuario.HasValue)
+        {
+            await OnTurmaAdicionada.InvokeAsync();
+            request = new CriarTurmaRequestDTO();
+            await Fechar();
+        }
+    }
+
+    private async Task Fechar()
+    {
+        if (OnFecharModal.HasDelegate)
+            await OnFecharModal.InvokeAsync();
+    }
+}

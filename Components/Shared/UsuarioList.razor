@@ -5,11 +5,15 @@
 @inject UsuarioService UsuarioService
 
 <div class="usuario-list-container">
-    <h3>@Title</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+        <h3 class="mb-0">@Title</h3>
+        <button class="btn btn-success" @onclick="AbrirModal">Adicionar @pTipoUsuario.ToString()</button>
+    </div>
 
-    <div class="filtros">
-        <input type="text" @bind="request.pesquisa" placeholder="Pesquisar por nome..." class="form-control" />
-        <select @bind="request.ordenacao" class="form-select">
+
+    <div class="filtros mb-3 d-flex gap-2 flex-wrap">
+        <input type="text" @bind="request.pesquisa" placeholder="Pesquisar por nome" class="form-control w-auto flex-fill" />
+        <select @bind="request.ordenacao" class="form-select w-auto">
             <option value="Ascendente">A-Z</option>
             <option value="Descendente">Z-A</option>
         </select>
@@ -19,7 +23,10 @@
     <table class="table table-striped mt-3">
         <thead>
             <tr>
-                <th>RA</th>
+                @if(pTipoUsuario == TipoUsuario.Aluno)
+                {
+                    <th>RA</th>
+                }
                 <th>Nome</th>
                 <th>Email</th>
                 <th>Ações</th>
@@ -39,7 +46,10 @@
                 @foreach (var u in usuarios)
                 {
                     <tr>
-                        <td>@u.RA</td>
+                        @if (pTipoUsuario == TipoUsuario.Aluno)
+                        {
+                            <td>@u.RA</td>
+                        }
                         <td>@u.Nome</td>
                         <td>@u.Email</td>
                         <td>
@@ -86,6 +96,7 @@
 </div>
 
 @code {
+    [Parameter] public EventCallback OnAbrirModal { get; set; }
     [Parameter] public string Title { get; set; } = "Lista de Usuários";
     [Parameter] public int? IdTurma { get; set; }
     [Parameter] public TipoUsuario? pTipoUsuario { get; set; } = null;
@@ -147,6 +158,12 @@
     private void FecharModal()
     {
         usuarioSelecionado = null;
+    }
+
+    private async Task AbrirModal()
+    {
+        if (OnAbrirModal.HasDelegate)
+            await OnAbrirModal.InvokeAsync();
     }
 
     private async Task DeletarUsuarioConfirmado()
