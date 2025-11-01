@@ -57,6 +57,17 @@ namespace ClassHub.Controllers
         }
 
         /// <summary>
+        /// Lista todos os professores do sistema
+        /// </summary>
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("listarProfessores")]
+        public async Task<IActionResult> ListarProfessores()
+        {
+            var lstUsuarios = await _usuarioService.ListarProfessores();
+            return Ok(lstUsuarios);
+        }
+
+        /// <summary>
         /// Remove um usuário
         /// </summary>
         /// <param name="idUsuario">Id do usuário a ser deletado</param>

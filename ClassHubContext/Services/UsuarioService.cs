@@ -159,5 +159,10 @@ namespace ClassHub.ClassHubContext.Services
             await _db.SaveChangesAsync();
         }
 
+        public async Task<List<UsuarioDTO>> ListarProfessores()
+        {
+            return await _db.Usuarios.Where(u => u.TipoUsuario == TipoUsuario.Professor).Select(u=> new UsuarioDTO { IdUsuario = u.Id, Nome= u.Nome, Email= u.Email, RA = u.RA, TipoUsuario = u.TipoUsuario}).ToListAsync();
+        }
+
     }
 }

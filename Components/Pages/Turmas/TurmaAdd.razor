@@ -1,8 +1,10 @@
 ﻿@using ClassHub.ClassHubContext.Models
 @using ClassHub.ClassHubContext.Services
 @using ClassHub.Dtos.Turma
+@using ClassHub.Dtos.Usuario
 @using ClassHub.Enums
 @inject TurmaService TurmaService
+@inject UsuarioService UsuarioService
 
 <div class="modal-backdrop fade show"></div>
 <div class="modal fade show d-block" tabindex="-1">
@@ -13,9 +15,36 @@
                 <button type="button" class="btn-close" @onclick="Fechar"></button>
             </div>
             <div class="modal-body">
-                <input type="text" @bind="request.Nome" placeholder="Nome da Turma" class="form-control mb-2" />
-                <input type="text" @bind="request.IdProfessor" placeholder="CPF" class="form-control mb-2" />
+
+                <input type="text"
+                       @bind="request.Nome"
+                       placeholder="Nome da Turma"
+                       class="form-control mb-2 @(string.IsNullOrWhiteSpace(request.Nome) && showValidation ? "is-invalid" : "")" />
+
+                @if (showValidation && string.IsNullOrWhiteSpace(request.Nome))
+                {
+                    <div class="invalid-feedback d-block">
+                        Informe o nome da turma.
+                    </div>
+                }
+
+                <select @bind="request.IdProfessor"
+                        class="form-control mb-2 @(request.IdProfessor == 0 && showValidation ? "is-invalid" : "")">
+                    <option value="0">Selecione um professor</option>
+                    @foreach (var professor in professores)
+                    {
+                        <option value="@professor.IdUsuario">@professor.Nome</option>
+                    }
+                </select>
+
+                @if (showValidation && request.IdProfessor == 0)
+                {
+                    <div class="invalid-feedback d-block">
+                        Selecione um professor.
+                    </div>
+                }
             </div>
+
             <div class="modal-footer">
                 <button class="btn btn-secondary" @onclick="Fechar">Cancelar</button>
                 <button class="btn btn-primary" @onclick="AdicionarTurma">Adicionar</button>
@@ -28,19 +57,36 @@
     [Parameter] public EventCallback OnTurmaAdicionada { get; set; }
     [Parameter] public EventCallback OnFecharModal { get; set; }
 
+    private bool showValidation = false;
     private CriarTurmaRequestDTO request = new();
+    private List<UsuarioDTO> professores = new();
 
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarProfessores();
+    }
 
     private async Task AdicionarTurma()
     {
+        showValidation = true;
+
+        if (string.IsNullOrWhiteSpace(request.Nome) || request.IdProfessor == 0)
+            return;
+
         int? idUsuario = await TurmaService.CriarTurmaAsync(request);
 
         if (idUsuario.HasValue)
         {
             await OnTurmaAdicionada.InvokeAsync();
             request = new CriarTurmaRequestDTO();
+            showValidation = false;
             await Fechar();
         }
+    }
+
+    private async Task CarregarProfessores()
+    {
+        professores = await UsuarioService.ListarProfessores();
     }
 
     private async Task Fechar()
