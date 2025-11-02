@@ -19,9 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ClassHub.csproj" />
     <ProjectReference Include="..\ClassHub\ClassHub.csproj" />
-    <ProjectReference Include="..\src\ClassHub.csproj" />
   </ItemGroup>
 
   <ItemGroup>

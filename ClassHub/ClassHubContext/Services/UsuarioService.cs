@@ -110,10 +110,14 @@ namespace ClassHub.ClassHubContext.Services
             if (request.qtRegistros < 1) request.qtRegistros = 10;
             var query = _db.Usuarios
                 .Include(x => x.Matriculas)
+                .Include(y=> y.TurmasLecionadas)
                 .AsQueryable();
 
             if(request.idTurma != null)
-                query = query.Where(u => u.Matriculas.Any(m => m.IdTurma == request.idTurma));
+            {
+
+                query = query.Where(u => u.Matriculas.Any(m => m.IdTurma == request.idTurma) || u.TurmasLecionadas.Any(x=> x.Id == request.idTurma));
+            }
 
             if (!string.IsNullOrEmpty(request.pesquisa))
                 query = query.Where(u => u.Nome.StartsWith(request.pesquisa));
