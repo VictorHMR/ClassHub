@@ -43,45 +43,59 @@
                         Selecione um professor.
                     </div>
                 }
+
+
+                <input type="date"
+                       @bind="request.DtFim"
+                       placeholder="Fim das aulas"
+                       class="form-control mb-2" />
+
             </div>
 
             <div class="modal-footer">
                 <button class="btn btn-secondary" @onclick="Fechar">Cancelar</button>
-                <button class="btn btn-primary" @onclick="AdicionarTurma">Adicionar</button>
+                <button class="btn btn-primary" @onclick="EditarTurma">Salvar</button>
             </div>
         </div>
     </div>
 </div>
 
 @code {
-    [Parameter] public EventCallback OnTurmaAdicionada { get; set; }
+    [Parameter] public EventCallback OnTurmaEditada { get; set; }
     [Parameter] public EventCallback OnFecharModal { get; set; }
+    [Parameter] public int idTurma { get; set; }
 
     private bool showValidation = false;
-    private CriarTurmaRequestDTO request = new();
+    private EditarTurmaRequestDTO request = new();
     private List<UsuarioDTO> professores = new();
 
     protected override async Task OnInitializedAsync()
     {
+        var turma = await TurmaService.ObterTurmaPorId(idTurma);
+        if(turma is not null)
+        {
+            request.IdTurma = idTurma;
+            request.Nome = turma.Nome;
+            request.IdProfessor = turma.IdProfessor;
+            request.DtFim = turma.DtFim;
+        }
         await CarregarProfessores();
     }
 
-    private async Task AdicionarTurma()
+    private async Task EditarTurma()
     {
         showValidation = true;
 
         if (string.IsNullOrWhiteSpace(request.Nome) || request.IdProfessor == 0)
             return;
 
-        int? idTurma = await TurmaService.CriarTurmaAsync(request);
+        await TurmaService.EditarTurmaAsync(request);
 
-        if (idTurma.HasValue)
-        {
-            await OnTurmaAdicionada.InvokeAsync();
-            request = new CriarTurmaRequestDTO();
-            showValidation = false;
-            await Fechar();
-        }
+        await OnTurmaEditada.InvokeAsync();
+        request = new EditarTurmaRequestDTO();
+        showValidation = false;
+        await Fechar();
+        
     }
 
     private async Task CarregarProfessores()

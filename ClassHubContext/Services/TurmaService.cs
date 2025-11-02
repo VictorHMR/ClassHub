@@ -136,6 +136,25 @@ namespace ClassHub.ClassHubContext.Services
             await _db.SaveChangesAsync();
         }
 
+        public async Task<TurmaDTO?> ObterTurmaPorId(int idTurma)
+        {
+            var turmaDB = await _db.Turmas.Include(t=> t.Professor).Include(t=> t.Matriculas).FirstOrDefaultAsync(t => t.Id == idTurma);
+
+            if (turmaDB is null) return null;
+
+            return new TurmaDTO
+            {
+                IdTurma = turmaDB.Id,
+                Nome = turmaDB.Nome,
+                DtInicio = turmaDB.DtInicio,
+                DtFim = turmaDB.DtFim,
+                NomeProfessor = turmaDB.Professor.Nome,
+                IdProfessor = turmaDB.IdProfessor,
+                QtdAlunos = turmaDB.Matriculas.Count()
+                
+            };
+        }
+
 
     }
 }

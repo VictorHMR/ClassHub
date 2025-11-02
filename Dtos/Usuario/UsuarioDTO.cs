@@ -8,6 +8,7 @@ namespace ClassHub.Dtos.Usuario
         public string RA { get; set; }
         public string Nome { get; set; }
         public string Email { get; set; }
+        public string CPF { get; set; }
         public TipoUsuario TipoUsuario { get; set; }
 
     }

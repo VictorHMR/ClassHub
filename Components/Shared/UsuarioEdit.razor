@@ -1,0 +1,93 @@
+﻿@using ClassHub.ClassHubContext.Models
+@using ClassHub.ClassHubContext.Services
+@using ClassHub.Dtos.Usuario
+@using ClassHub.Enums
+@inject UsuarioService UsuarioService
+
+<div class="modal-backdrop fade show"></div>
+<div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar @usuario!.TipoUsuario.ToString()</h5>
+                <button type="button" class="btn-close" @onclick="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" @bind="request.Nome" placeholder="Nome" class="form-control mb-2 @(string.IsNullOrWhiteSpace(request.Nome) && showValidation ? "is-invalid" : "")" />
+                @if (showValidation && string.IsNullOrWhiteSpace(request.Nome))
+                {
+                    <div class="invalid-feedback d-block">
+                        Informe o nome.
+                    </div>
+                }
+                <input type="text" @bind="request.CPF" placeholder="CPF" class="form-control mb-2 @(string.IsNullOrWhiteSpace(request.CPF) && showValidation ? "is-invalid" : "")" />
+                @if (showValidation && string.IsNullOrWhiteSpace(request.CPF))
+                {
+                    <div class="invalid-feedback d-block">
+                        Informe o CPF.
+                    </div>
+                }
+                <input type="email" @bind="request.Email" placeholder="Email" class="form-control mb-2 @(string.IsNullOrWhiteSpace(request.CPF) && showValidation ? "is-invalid" : "")" />
+                @if (showValidation && string.IsNullOrWhiteSpace(request.Email))
+                {
+                    <div class="invalid-feedback d-block">
+                        Informe o Email.
+                    </div>
+                }
+                <input type="password" @bind="request.Senha" placeholder="Senha" class="form-control mb-2 @(string.IsNullOrWhiteSpace(request.Senha) && showValidation ? "is-invalid" : "")" />
+                @if (showValidation && string.IsNullOrWhiteSpace(request.Senha))
+                {
+                    <div class="invalid-feedback d-block">
+                        Informe a Senha.
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="Fechar">Cancelar</button>
+                <button class="btn btn-primary" @onclick="EditarUsuario">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int pIdUsuario { get; set; }
+    [Parameter] public EventCallback OnUsuarioEditado { get; set; }
+    [Parameter] public EventCallback OnFecharModal { get; set; }
+
+    private EditarUsuarioRequestDTO request = new();
+    private UsuarioDTO? usuario = new();
+    private bool showValidation = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuario = await UsuarioService.ObterUsuarioPorId(pIdUsuario);
+        if(usuario is not null)
+        {
+            request.Id = usuario.IdUsuario;
+            request.Nome = usuario!.Nome;
+            request.Email = usuario.Email;
+            request.CPF = usuario.CPF;
+            request.Senha = "";
+        }
+    }
+
+    private async Task EditarUsuario()
+    {
+        showValidation = true;
+        if (string.IsNullOrWhiteSpace(request.Nome) || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.CPF) || string.IsNullOrWhiteSpace(request.Senha))
+            return;
+        await UsuarioService.EditarUsuario(request);
+
+        await OnUsuarioEditado.InvokeAsync();
+        request = new EditarUsuarioRequestDTO();
+        showValidation = false;
+        await Fechar();
+    }
+
+    private async Task Fechar()
+    {
+        if (OnFecharModal.HasDelegate)
+            await OnFecharModal.InvokeAsync();
+    }
+}

@@ -164,5 +164,35 @@ namespace ClassHub.ClassHubContext.Services
             return await _db.Usuarios.Where(u => u.TipoUsuario == TipoUsuario.Professor).Select(u=> new UsuarioDTO { IdUsuario = u.Id, Nome= u.Nome, Email= u.Email, RA = u.RA, TipoUsuario = u.TipoUsuario}).ToListAsync();
         }
 
+        public async Task<UsuarioDTO?> ObterUsuarioPorId(int idUsuario)
+        {
+            var usuario = await _db.Usuarios.FirstOrDefaultAsync(u => u.Id == idUsuario);
+
+            if (usuario == null) return null;
+
+            return new UsuarioDTO
+            {
+                IdUsuario = usuario.Id,
+                Nome = usuario.Nome,
+                Email = usuario.Email,
+                RA = usuario.RA,
+                CPF = usuario.CPF,
+                TipoUsuario = usuario.TipoUsuario
+            };
+        }
+
+        public async Task EditarUsuario(EditarUsuarioRequestDTO editarUsuario)
+        {
+            var usuario =  await _db.Usuarios.FirstOrDefaultAsync(u => u.Id == editarUsuario.Id);
+            if (usuario == null) throw new Exception("Usuário não encontrado.");
+            usuario.Nome = editarUsuario.Nome;
+            usuario.Email = editarUsuario.Email;
+            usuario.CPF = editarUsuario.CPF;
+            if (!string.IsNullOrEmpty(editarUsuario.Senha))
+            {
+                usuario.Senha = _hasher.HashPassword(usuario, editarUsuario.Senha);
+            }
+            await _db.SaveChangesAsync();
+        }
     }
 }

@@ -12,7 +12,7 @@
         <h3 class="mb-0">@Title</h3>
         @if (isAdmin)
         {
-            <button class="btn btn-success" @onclick="AbrirModal">Adicionar Turma</button>
+            <button class="btn btn-success" @onclick="AbrirModalAdicao">Adicionar Turma</button>
         }
     </div>
 
@@ -43,19 +43,27 @@
                 <div class="card-body d-flex flex-column justify-content-between">
                     <div>
                         <h5 class="card-title">@turma.Nome</h5>
+                                @if (isAdmin)
+                                {
+                                    <div class="position-absolute top-0 end-0  d-flex flex-column gap-2 p-2">
+                                        <button class="btn btn-outline-danger btn-sm"
+                                                title="Excluir"
+                                                @onclick="() => AbrirModalConfirmarExclusao(turma)">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm"
+                                                title="Editar"
+                                                @onclick="() => AbrirModalEdicao(turma)">
+                                            <i class="bi bi-pen-fill"></i>
+                                        </button>
+                                    </div>
+                                }
 
-                        @if (isAdmin)
-                        {
-                            <button class="btn btn-outline-danger btn-sm position-absolute top-0 end-0 m-2"
-                                    title="Excluir"
-                                    @onclick="() => ConfirmarExclusao(turma)">
-                                <i class="bi bi-trash-fill"></i>
-                            </button>
-                        }
 
                         <p class="card-text mb-2 mt-3">
                             <strong>Professor:</strong> @turma.NomeProfessor <br />
                             <strong>Inicio:</strong> @turma.DtInicio.ToShortDateString() <br />
+                            <strong>Fim:</strong> @turma.DtFim?.ToShortDateString() <br />
                             <strong>Alunos:</strong> @turma.QtdAlunos 
                         </p>
                     </div>
@@ -67,7 +75,7 @@
 
     }
 
-    @if (turmaSelecionada != null && operacao == "DEL")
+    @if (turmaSelecionada != null && action == "DEL")
     {
         <div class="modal-backdrop fade show"></div>
         <div class="modal fade show d-block" tabindex="-1">
@@ -97,9 +105,13 @@
             <button class="btn btn-sm btn-secondary" @onclick="Proximo" disabled="@(request.nrPagina >= paginacao.TotalPaginas)">Próxima</button>
         </div>
     }
-    @if (operacao == "ADD")
+    @if (action == "ADD")
     {
-        <TurmaAdd OnTurmaAdicionada="TurmaAdicionada" OnFecharModal="FecharModal" />
+        <TurmaAdd OnTurmaAdicionada="TurmasAlteradas" OnFecharModal="FecharModal" />
+    }
+    @if (turmaSelecionada != null && action == "EDIT")
+    {
+        <TurmaEdit OnTurmaEditada="TurmasAlteradas" OnFecharModal="FecharModal" idTurma="turmaSelecionada.IdTurma" />
     }
 </div>
 
@@ -118,7 +130,7 @@
     private PaginacaoResult<TurmaDTO>? paginacao;
     private IEnumerable<TurmaDTO>? turmas;
     private TurmaDTO? turmaSelecionada;
-    private string operacao = "";
+    private string action = "";
     private bool isAdmin = false;
 
     protected override async Task OnInitializedAsync()
@@ -146,21 +158,26 @@
         turmas = paginacao.Itens;
     }
 
-    private void ConfirmarExclusao(TurmaDTO turma)
+    private void AbrirModalConfirmarExclusao(TurmaDTO turma)
     {
         turmaSelecionada = turma;
-        operacao = "DEL";
+        action = "DEL";
     }
 
+    private void AbrirModalAdicao()
+    {
+        action = "ADD";
+    }
+
+    private void AbrirModalEdicao(TurmaDTO turma)
+    {
+        turmaSelecionada = turma;
+        action = "EDIT";
+    }
     private void FecharModal()
     {
         turmaSelecionada = null;
-        operacao = "";
-    }
-
-    private void AbrirModal()
-    {
-        operacao = "ADD";
+        action = "LIST";
     }
 
     private async Task DeletarTurmaConfirmada()
@@ -198,7 +215,7 @@
         }
     }
 
-    private async Task TurmaAdicionada()
+    private async Task TurmasAlteradas()
     {
         await CarregarTurmas();
         FecharModal();

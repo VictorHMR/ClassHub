@@ -32,6 +32,18 @@ namespace ClassHub.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Realiza a listagem dos dados de uma turma pelo id
+        /// </summary>
+        /// <param name="idTurma">Id da turma desejada</param>
+        /// <returns>Detalhes da turma cujo id foi enviado</returns>
+        [HttpGet("Obter")]
+        [Authorize]
+        public async Task<IActionResult> ObterTurma([FromQuery] int idTurma)
+        {
+            var result = await _turmaService.ObterTurmaPorId(idTurma);
+            return Ok(result);
+        }
 
         /// <summary>
         /// Realiza a criação de uma nova turma no sistema.

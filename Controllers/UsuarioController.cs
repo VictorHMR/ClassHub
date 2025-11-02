@@ -79,6 +79,28 @@ namespace ClassHub.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Lista um usuário pelo Id
+        /// </summary>
+        /// <param name="idUsuario">Id do usuário a ser buscado</param>
+        [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("obterusuario")]
+        public async Task<IActionResult> ObterUsuario([FromQuery] int idUsuario)
+        {
+            var usuario = await _usuarioService.ObterUsuarioPorId(idUsuario);
+            return Ok(usuario);
+        }
 
+        /// <summary>
+        /// Realiza a edição de um usuário
+        /// </summary>
+        /// <param name="request">Novos dados do usuário</param>
+        [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut("editar")]
+        public async Task<IActionResult> Editar([FromBody] EditarUsuarioRequestDTO request)
+        {
+            await _usuarioService.EditarUsuario(request);
+            return Ok();
+        }
     }
 }

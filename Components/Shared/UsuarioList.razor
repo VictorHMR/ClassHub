@@ -53,8 +53,11 @@
                         <td>@u.Nome</td>
                         <td>@u.Email</td>
                         <td>
-                            <button class="btn btn-outline-danger btn-sm" @onclick="() => ConfirmarExclusao(u)">
+                            <button class="btn btn-outline-danger btn-sm" @onclick="() => AbrirModalConfirmarExclusao(u)">
                                 <i class="bi bi-trash-fill"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" @onclick="() => AbrirModalEdicao(u)">
+                                <i class="bi bi-pen-fill"></i>
                             </button>
                         </td>
                     </tr>
@@ -62,7 +65,7 @@
             }
         </tbody>
     </table>
-    @if (usuarioSelecionado != null)
+    @if (usuarioSelecionado != null && action == "DEL")
     {
         <div class="modal-backdrop fade show"></div>
         <div class="modal fade show d-block" tabindex="-1">
@@ -84,6 +87,11 @@
         </div>
     }
 
+    @if(usuarioSelecionado != null && action == "EDIT")
+    {
+        <UsuarioEdit OnFecharModal="FecharModal" OnUsuarioEditado="CarregarUsuarios" pIdUsuario="usuarioSelecionado.IdUsuario" />
+    }
+
 
     @if (paginacao != null && paginacao.TotalPaginas > 1)
     {
@@ -100,6 +108,7 @@
     [Parameter] public string Title { get; set; } = "Lista de Usuários";
     [Parameter] public int? IdTurma { get; set; }
     [Parameter] public TipoUsuario? pTipoUsuario { get; set; } = null;
+    [Parameter] public string action { get; set; }
 
     private ListarUsuarioRequestDTO request = new()
     {
@@ -150,13 +159,22 @@
             await CarregarUsuarios();
         }
     }
-    private void ConfirmarExclusao(UsuarioDTO usuario)
+
+    private void AbrirModalConfirmarExclusao(UsuarioDTO usuario)
     {
+        action = "DEL";
+        usuarioSelecionado = usuario;
+    }
+
+    private void AbrirModalEdicao(UsuarioDTO usuario)
+    {
+        action = "EDIT";
         usuarioSelecionado = usuario;
     }
 
     private void FecharModal()
     {
+        action = "VIEW";
         usuarioSelecionado = null;
     }
 
