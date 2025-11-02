@@ -50,10 +50,13 @@ namespace ClassHub.ClassHubContext.Services
         public async Task<LoginResponseDTO?> ObterUsuarioAsync(LoginRequestDTO LoginRequest)
         {
             var usuario = await _db.Usuarios
-                .Where(u => u.Email == LoginRequest.Login|| u.RA == LoginRequest.Login)
+                .Where(u => u.Email == LoginRequest.Login || u.RA == LoginRequest.Login)
                 .FirstOrDefaultAsync();
 
-            if (usuario == null) return null;
+            if (usuario == null || string.IsNullOrEmpty(usuario.RA))
+            {
+                return null;
+            }
 
             var result = _hasher.VerifyHashedPassword(usuario, usuario.Senha, LoginRequest.Senha);
 
@@ -70,16 +73,21 @@ namespace ClassHub.ClassHubContext.Services
 
         public string GerarToken(Usuario usuario)
         {
+            if (usuario == null || string.IsNullOrEmpty(usuario.RA))
+            {
+                throw new ArgumentException("O RA do usuário não pode ser nulo ou vazio.");
+            }
+
             var jwtSection = _configuration.GetSection("Jwt");
             var key = Encoding.ASCII.GetBytes(jwtSection["Key"]);
             var expireHours = Convert.ToDouble(jwtSection["ExpireHours"]);
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
-                new Claim(ClaimTypes.Name, usuario.Nome),
-                new Claim(ClaimTypes.Role, usuario.TipoUsuario.ToString())
-            };
+        new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+        new Claim(ClaimTypes.Name, usuario.Nome),
+        new Claim(ClaimTypes.Role, usuario.TipoUsuario.ToString())
+    };
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
