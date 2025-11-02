@@ -40,8 +40,15 @@ namespace ClassHub.Controllers
         [Authorize(Roles = "Admin,Professor")]
         public async Task<IActionResult> Lancar([FromBody] LancarNotaRequestDTO novoLancamento)
         {
-            await _notaService.InserirNotaAsync(novoLancamento);
-            return Ok();
+            try
+            {
+                await _notaService.InserirNotaAsync(novoLancamento);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         /// <summary>

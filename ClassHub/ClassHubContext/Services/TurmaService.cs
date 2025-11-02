@@ -10,13 +10,12 @@ namespace ClassHub.ClassHubContext.Services
     {
         private readonly ClassHubDbContext _db;
 
-
         public TurmaService(ClassHubDbContext db, IConfiguration configuration)
         {
             _db = db;
         }
 
-        public async Task<int> CriarTurmaAsync (CriarTurmaRequestDTO novaTurma)
+        public virtual async Task<int> CriarTurmaAsync (CriarTurmaRequestDTO novaTurma)
         {
             var Turma = new Turma
             {
@@ -32,7 +31,7 @@ namespace ClassHub.ClassHubContext.Services
             return Turma.Id;
         }
 
-        public async Task EditarTurmaAsync(EditarTurmaRequestDTO turma)
+        public virtual async Task EditarTurmaAsync(EditarTurmaRequestDTO turma)
         {
             Turma? turmaDB = await _db.Turmas.FindAsync(turma.IdTurma);
 
@@ -46,7 +45,7 @@ namespace ClassHub.ClassHubContext.Services
             await _db.SaveChangesAsync();
         }
 
-        public async Task DeletarTurmaAsync(int idTurma)
+        public virtual async Task DeletarTurmaAsync(int idTurma)
         {
             Turma? turma = await _db.Turmas.FindAsync(idTurma);
             if (turma is null)
@@ -61,7 +60,7 @@ namespace ClassHub.ClassHubContext.Services
             await _db.SaveChangesAsync();
         }
 
-        public async Task<PaginacaoResult<TurmaDTO>> ListarTurmasAsync(ListarTurmaRequestDTO request)
+        public virtual async Task<PaginacaoResult<TurmaDTO>> ListarTurmasAsync(ListarTurmaRequestDTO request)
         {
             if (request.nrPagina< 1) request.nrPagina = 1;
             if (request.qtRegistros < 1) request.qtRegistros = 10;
@@ -107,7 +106,7 @@ namespace ClassHub.ClassHubContext.Services
             };
         }
 
-        public async Task VincularAlunoTurmaAsync(VincularAlunoTurmaRequestDTO request)
+        public virtual async Task VincularAlunoTurmaAsync(VincularAlunoTurmaRequestDTO request)
         {
             var idAluno = _db.Usuarios
                 .Where(u => u.RA == request.RAAluno)
@@ -136,7 +135,7 @@ namespace ClassHub.ClassHubContext.Services
             await _db.SaveChangesAsync();
         }
 
-        public async Task<TurmaDTO?> ObterTurmaPorId(int idTurma)
+        public virtual async Task<TurmaDTO?> ObterTurmaPorId(int idTurma)
         {
             var turmaDB = await _db.Turmas.Include(t=> t.Professor).Include(t=> t.Matriculas).FirstOrDefaultAsync(t => t.Id == idTurma);
 

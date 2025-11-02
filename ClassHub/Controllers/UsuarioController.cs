@@ -75,8 +75,15 @@ namespace ClassHub.Controllers
         [HttpDelete("deletar")]
         public async Task<IActionResult> Deletar([FromQuery] int idUsuario)
         {
-            await _usuarioService.DeletarUsuario(idUsuario);
-            return Ok();
+            try
+            {
+                await _usuarioService.DeletarUsuario(idUsuario);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>

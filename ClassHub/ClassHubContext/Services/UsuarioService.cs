@@ -26,7 +26,7 @@ namespace ClassHub.ClassHubContext.Services
             _configuration = configuration;
         }
 
-        public async Task<int> CriarUsuarioAsync(CriarUsuarioRequestDTO novoUsuario)
+        public virtual async Task<int> CriarUsuarioAsync(CriarUsuarioRequestDTO novoUsuario)
         {
             var usuario = new Usuario
             {
@@ -47,7 +47,7 @@ namespace ClassHub.ClassHubContext.Services
             return usuario.Id;
         }
 
-        public async Task<LoginResponseDTO?> ObterUsuarioAsync(LoginRequestDTO LoginRequest)
+        public virtual async Task<LoginResponseDTO?> ObterUsuarioAsync(LoginRequestDTO LoginRequest)
         {
             var usuario = await _db.Usuarios
                 .Where(u => u.Email == LoginRequest.Login || u.RA == LoginRequest.Login)
@@ -71,7 +71,7 @@ namespace ClassHub.ClassHubContext.Services
             } : null;
         }
 
-        public string GerarToken(Usuario usuario)
+        public virtual string GerarToken(Usuario usuario)
         {
             if (usuario == null || string.IsNullOrEmpty(usuario.RA))
             {
@@ -101,7 +101,7 @@ namespace ClassHub.ClassHubContext.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public async Task<Usuario?> LoginAsync(string login, string senha)
+        public virtual async Task<Usuario?> LoginAsync(string login, string senha)
         {
             var usuario = await _db.Usuarios.FirstOrDefaultAsync(u => u.Email == login || u.RA == login);
 
@@ -112,7 +112,7 @@ namespace ClassHub.ClassHubContext.Services
             return result == PasswordVerificationResult.Success ? usuario : null;
         }
 
-        public async Task<PaginacaoResult<UsuarioDTO>> ListarUsuarios(ListarUsuarioRequestDTO request)
+        public virtual async Task<PaginacaoResult<UsuarioDTO>> ListarUsuarios(ListarUsuarioRequestDTO request)
         {
             if (request.nrPagina < 1) request.nrPagina = 1;
             if (request.qtRegistros < 1) request.qtRegistros = 10;
@@ -162,7 +162,7 @@ namespace ClassHub.ClassHubContext.Services
             };
         }
 
-        public async Task DeletarUsuario(int idUsuario)
+        public virtual async Task DeletarUsuario(int idUsuario)
         {
             var usuario = await _db.Usuarios.Include(u => u.Matriculas).Include(u=> u.TurmasLecionadas).FirstOrDefaultAsync(u => u.Id == idUsuario);
             if (usuario.Matriculas.Any() || (usuario.TurmasLecionadas?.Any() ?? true))
@@ -171,12 +171,12 @@ namespace ClassHub.ClassHubContext.Services
             await _db.SaveChangesAsync();
         }
 
-        public async Task<List<UsuarioDTO>> ListarProfessores()
+        public virtual async Task<List<UsuarioDTO>> ListarProfessores()
         {
             return await _db.Usuarios.Where(u => u.TipoUsuario == TipoUsuario.Professor).Select(u=> new UsuarioDTO { IdUsuario = u.Id, Nome= u.Nome, Email= u.Email, RA = u.RA, TipoUsuario = u.TipoUsuario}).ToListAsync();
         }
 
-        public async Task<UsuarioDTO?> ObterUsuarioPorId(int idUsuario)
+        public virtual async Task<UsuarioDTO?> ObterUsuarioPorId(int idUsuario)
         {
             var usuario = await _db.Usuarios.FirstOrDefaultAsync(u => u.Id == idUsuario);
 
@@ -193,7 +193,7 @@ namespace ClassHub.ClassHubContext.Services
             };
         }
 
-        public async Task EditarUsuario(EditarUsuarioRequestDTO editarUsuario)
+        public virtual async Task EditarUsuario(EditarUsuarioRequestDTO editarUsuario)
         {
             var usuario =  await _db.Usuarios.FirstOrDefaultAsync(u => u.Id == editarUsuario.Id);
             if (usuario == null) throw new Exception("Usuário não encontrado.");
