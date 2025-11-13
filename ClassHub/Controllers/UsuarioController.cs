@@ -1,4 +1,5 @@
-﻿using ClassHub.ClassHubContext.Services;
+﻿using ClassHub.ClassHubContext.Models;
+using ClassHub.ClassHubContext.Services;
 using ClassHub.Dtos.Usuario;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -22,6 +23,8 @@ namespace ClassHub.Controllers
         /// <param name="login">Informações de login do usuário</param>
         /// <returns>JWT Token do usuário</returns>
         [HttpPost("login")]
+        [ProducesResponseType(typeof(LoginResponseDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO login)
         {
             var usuario = await _usuarioService.ObterUsuarioAsync(login);
@@ -38,6 +41,8 @@ namespace ClassHub.Controllers
         [Authorize(Roles = "Admin", AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
 #endif
         [HttpPost("create")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Create([FromBody] CriarUsuarioRequestDTO novoUsuario)
         {
             var usuario = await _usuarioService.CriarUsuarioAsync(novoUsuario);
@@ -50,6 +55,8 @@ namespace ClassHub.Controllers
         /// <param name="filtro">Informações do filtro para a listagem</param>
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("listar")]
+        [ProducesResponseType(typeof(PaginacaoResult<UsuarioDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Listar([FromBody] ListarUsuarioRequestDTO filtro)
         {
             var lstUsuarios = await _usuarioService.ListarUsuarios(filtro);
@@ -61,6 +68,8 @@ namespace ClassHub.Controllers
         /// </summary>
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("listarProfessores")]
+        [ProducesResponseType(typeof(List<UsuarioDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> ListarProfessores()
         {
             var lstUsuarios = await _usuarioService.ListarProfessores();
@@ -73,6 +82,8 @@ namespace ClassHub.Controllers
         /// <param name="idUsuario">Id do usuário a ser deletado</param>
         [Authorize(Roles ="Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpDelete("deletar")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Deletar([FromQuery] int idUsuario)
         {
             try
@@ -92,6 +103,8 @@ namespace ClassHub.Controllers
         /// <param name="idUsuario">Id do usuário a ser buscado</param>
         [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("obterusuario")]
+        [ProducesResponseType(typeof(UsuarioDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> ObterUsuario([FromQuery] int idUsuario)
         {
             var usuario = await _usuarioService.ObterUsuarioPorId(idUsuario);
@@ -104,6 +117,8 @@ namespace ClassHub.Controllers
         /// <param name="request">Novos dados do usuário</param>
         [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("editar")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Editar([FromBody] EditarUsuarioRequestDTO request)
         {
             await _usuarioService.EditarUsuario(request);

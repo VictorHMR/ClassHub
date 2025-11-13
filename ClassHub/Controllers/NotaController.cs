@@ -1,5 +1,7 @@
-﻿using ClassHub.ClassHubContext.Services;
+﻿using ClassHub.ClassHubContext.Models;
+using ClassHub.ClassHubContext.Services;
 using ClassHub.Dtos.Nota;
+using ClassHub.Dtos.Turma;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +27,8 @@ namespace ClassHub.Controllers
         /// <returns>Ok</returns>
         [HttpGet("ListarNotasAluno")]
         [Authorize(Roles = "Admin,Professor")]
+        [ProducesResponseType(typeof(List<ListarNotasAlunoResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> ListarNotasAluno([FromQuery] int idAlunoTurma)
         {
             var notas = await _notaService.ListarNotasAluno(idAlunoTurma);
@@ -38,6 +42,8 @@ namespace ClassHub.Controllers
         /// <returns>Ok</returns>
         [HttpPost("Lancar")]
         [Authorize(Roles = "Admin,Professor")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Lancar([FromBody] LancarNotaRequestDTO novoLancamento)
         {
             try
@@ -58,6 +64,8 @@ namespace ClassHub.Controllers
         /// <returns>Ok</returns>
         [HttpPut("Editar")]
         [Authorize(Roles = "Admin,Professor")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Editar([FromBody] EditarNotaRequestDTO novoLancamento)
         {
             await _notaService.EditarNotaAsync(novoLancamento);
@@ -71,6 +79,8 @@ namespace ClassHub.Controllers
         /// <returns>Ok</returns>
         [HttpDelete("Deletar")]
         [Authorize(Roles = "Admin,Professor")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Deletar([FromQuery] int idNota)
         {
             await _notaService.DeletarNotaAsync(idNota);
